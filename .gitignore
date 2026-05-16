@@ -97,3 +97,7 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Firebase Unity desktop native binaries exceed GitHub's file-size limit.
+/Assets/Firebase/Plugins/x86_64/FirebaseCppApp-13_9_0.bundle
+/Assets/Firebase/Plugins/x86_64/FirebaseCppApp-13_9_0.so
