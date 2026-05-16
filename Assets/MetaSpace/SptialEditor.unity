@@ -1099,7 +1099,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   editorManager: {fileID: 1543435893}
   apiSettings:
-    apiKey:
+    apiKey: 
     textModel: gpt-3.5-turbo
     textBaseUrl: https://api.openai.com/v1/chat/completions
     systemPrompt: You are a concise guide. Provide a guide for user to know how to

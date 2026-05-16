@@ -60,6 +60,16 @@ namespace MultiSet
                 return null;
             }
 
+            string mapName = string.IsNullOrEmpty(mapInfo.mapName) ? "ExternalMap" : mapInfo.mapName;
+            var cachedMap = await TryLoadCachedMapAsync(mapName, mapInfo.mapCode);
+            if (cachedMap != null)
+            {
+                onProgress?.Invoke(1f);
+                OnProgress?.Invoke(1f);
+                await RefreshLoadDbOptionsAsync(mapName);
+                return cachedMap;
+            }
+
             if (mapService == null)
             {
                 Debug.LogError("LoadMapAsync: map service is not configured");
@@ -83,7 +93,6 @@ namespace MultiSet
                 return null;
             }
 
-            string mapName = string.IsNullOrEmpty(mapInfo.mapName) ? "ExternalMap" : mapInfo.mapName;
             var loadedMap = await LoadMapFromRemoteAsync(resolvedUrl, mapName, onProgress, mapInfo.mapCode);
             if (loadedMap != null)
             {
@@ -95,6 +104,15 @@ namespace MultiSet
 
         public async Task<GameObject> LoadMapFromURL(string meshUrl, string mapName = "ExternalMap", Action<float> onProgress = null, string mapCode = null)
         {
+            var cachedMap = await TryLoadCachedMapAsync(mapName, mapCode);
+            if (cachedMap != null)
+            {
+                onProgress?.Invoke(1f);
+                OnProgress?.Invoke(1f);
+                await RefreshLoadDbOptionsAsync(mapName);
+                return cachedMap;
+            }
+
             if (string.IsNullOrEmpty(meshUrl))
             {
                 Debug.LogError("LoadMapFromURL: meshUrl is null or empty");
@@ -165,6 +183,33 @@ namespace MultiSet
             catch (Exception ex)
             {
                 Debug.LogError($"LoadMapFromRemoteAsync failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async Task<GameObject> TryLoadCachedMapAsync(string mapName, string mapCode)
+        {
+            if (!enableMapCache || string.IsNullOrWhiteSpace(mapCode))
+            {
+                return null;
+            }
+
+            string cachePath = GetMapCachePath(null, mapCode);
+            if (!File.Exists(cachePath))
+            {
+                Debug.Log($"Map cache miss for code '{mapCode}' at: {cachePath}");
+                return null;
+            }
+
+            try
+            {
+                byte[] cachedBytes = await File.ReadAllBytesAsync(cachePath);
+                Debug.Log($"Loaded map from cache by mapCode '{mapCode}': {cachePath}");
+                return await LoadGlbFromBytesAsync(cachedBytes, mapName);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Failed to load cached map '{mapCode}' from '{cachePath}': {ex.Message}");
                 return null;
             }
         }
